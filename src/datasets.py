@@ -1,21 +1,31 @@
 import numpy as np
 
 class DatasetGenerator:
-    def __init__(self, num_samples=100):
+    def __init__(self, num_samples=100, name = 'two_cluster'):
         self.num_samples = num_samples
-        self.dataset = self.generate()
+        self.linear_boundary = None
+        self.dataset = self.generate(name)
         self.index = 0
 
-    def generate(self):
-        # Generate a simple dataset with two clusters
-        x_class_1 = np.random.randn(self.num_samples, 2) + np.array([2, 2])
-        y_class_1 = np.ones(self.num_samples)
+    def generate(self, name):
 
-        x_class_2 = np.random.randn(self.num_samples, 2) + np.array([-2, -2])
-        y_class_2 = -1 * np.ones(self.num_samples)
+        if name == 'two_cluster':
+            # Generate a simple dataset with two clusters
+            x_class_1 = np.random.randn(self.num_samples, 2) + np.array([2, 2])
+            y_class_1 = np.ones(self.num_samples)
 
-        X = np.vstack((x_class_1, x_class_2))
-        Y = np.concatenate((y_class_1, y_class_2))
+            x_class_2 = np.random.randn(self.num_samples, 2) + np.array([-2, -2])
+            y_class_2 = -1 * np.ones(self.num_samples)
+
+            X = np.vstack((x_class_1, x_class_2))
+            Y = np.concatenate((y_class_1, y_class_2))
+
+        elif name == 'cluster_split':
+            X = np.random.multivariate_normal(mean=[0, 0], cov=[[1, 0], [0, 1]], size=self.num_samples*2)
+            self.linear_boundary = np.array([1, -1])
+            Y = np.where(np.dot(X, self.linear_boundary) >= 0, 1, -1)
+
+
         dataset = list(zip(X, Y))
         np.random.shuffle(dataset)
         return dataset
