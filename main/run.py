@@ -4,11 +4,13 @@ from src.adversaries import *
 import matplotlib.pyplot as plt
 
 
-def initialization(num_samples=50, input_dim=2, G=None, name = 'cluster_split'):
+def initialization(num_samples=50, input_dim=2, G=None, K = 0, T = 10, name = 'cluster_split'):
 
     dataset = DatasetGenerator(num_samples=num_samples, name = name)
     # learner = FakeCoinMeta(input_dim=input_dim)
-    learner = ZYCPMeta(input_dim=input_dim, epsilon = 1, alpha = 1, h = G)
+    # learner = ZYCPMeta(input_dim=input_dim, epsilon = 1, alpha = 1, h = G)
+
+    learner = RobustMetaWithG(input_dim=input_dim, epsilon=1, h=G, c=K*G, T=len(dataset.dataset), K=K)
     adversarial = Adversarial(G=G)
 
     return dataset, learner, adversarial
@@ -67,7 +69,7 @@ def run_experiment(num_samples=50, input_dim=2, G=None, K=5, name = 'cluster_spl
     Main function to run the entire experiment.
     """
     # Initialize experiment components
-    dataset, learner, adversarial = initialization(num_samples, input_dim, G, name)
+    dataset, learner, adversarial = initialization(num_samples, input_dim, G, K, name)
 
     # Corrupt labels and train
     corrupted_indices, final_weights = corrupt_and_train(dataset, learner, adversarial, G, K)
@@ -78,6 +80,6 @@ def run_experiment(num_samples=50, input_dim=2, G=None, K=5, name = 'cluster_spl
 
 # Run the experiment
 if __name__ == '__main__':
-    run_experiment(num_samples=10000, input_dim=2, G=2, K=100, name = 'cluster_split')
+    run_experiment(num_samples=50, input_dim=2, G=2, K=10, name = 'cluster_split')
 
     # seems matters more when margin is small, dense data around decision boundary
