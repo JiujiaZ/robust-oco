@@ -7,12 +7,14 @@ import matplotlib.pyplot as plt
 def initialization(num_samples=50, input_dim=2, G=None, name = 'cluster_split'):
 
     dataset = DatasetGenerator(num_samples=num_samples, name = name)
-    learner = ParameterFree(input_dim=input_dim)
+    # learner = FakeCoinMeta(input_dim=input_dim)
+    learner = ZYCPMeta(input_dim=input_dim, epsilon = 1, alpha = 1, h = G)
     adversarial = Adversarial(G=G)
+
     return dataset, learner, adversarial
 
 
-def corrupt_and_train(dataset, learner, adversarial, K=5):
+def corrupt_and_train(dataset, learner, adversarial, G = None, K=5):
 
     # Corrupt K labels
     labels = np.array([y for _, y in dataset])
@@ -24,7 +26,7 @@ def corrupt_and_train(dataset, learner, adversarial, K=5):
         grad = adversarial.feedback(w, x, y_corrupted)
         # corrupt = True if idx in corrupted_indices else False
         # grad = adversarial.feedback(w, x, y, corrupt)
-        learner.update(grad)
+        learner.update(grad, G)
 
     return corrupted_indices, learner.w
 
@@ -68,7 +70,7 @@ def run_experiment(num_samples=50, input_dim=2, G=None, K=5, name = 'cluster_spl
     dataset, learner, adversarial = initialization(num_samples, input_dim, G, name)
 
     # Corrupt labels and train
-    corrupted_indices, final_weights = corrupt_and_train(dataset, learner, adversarial, K)
+    corrupted_indices, final_weights = corrupt_and_train(dataset, learner, adversarial, G, K)
 
     # Visualize the results
     visualize_results(dataset, final_weights, corrupted_indices)
@@ -76,6 +78,6 @@ def run_experiment(num_samples=50, input_dim=2, G=None, K=5, name = 'cluster_spl
 
 # Run the experiment
 if __name__ == '__main__':
-    run_experiment(num_samples=100, input_dim=2, G=None, K=10, name = 'cluster_split')
+    run_experiment(num_samples=10000, input_dim=2, G=2, K=100, name = 'cluster_split')
 
     # seems matters more when margin is small, dense data around decision boundary

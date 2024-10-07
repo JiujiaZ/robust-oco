@@ -1,5 +1,7 @@
 import copy
 import numpy as np
+from scipy.integrate import quad
+from scipy.special import erfi
 
 class FakeCoinBetting:
     def __init__(self):
@@ -31,7 +33,7 @@ class OSDBall:
         # projection:
         self.w = self.w if np.linalg.norm(self.w) <= 1 else self.w / np.linalg.norm(self.w)
 
-class ParameterFree():
+class FakeCoinMeta():
     def __init__(self,input_dim=2):
         self.learner_magnitude = FakeCoinBetting()
         self.learner_direction = OSDBall(input_dim)
@@ -45,6 +47,66 @@ class ParameterFree():
         self.learner_magnitude.update(np.dot(grad, self.learner_direction.play()))
         self.learner_direction.update(grad)
         self.w = self.learner_magnitude.play() * self.learner_direction.play()
+
+
+class ZYCPMagnitude:
+    def __init__(self, epsilon = 1, alpha = 1, h = 1):
+        self.alpha = alpha
+        self.epsilon = epsilon
+        self.h = h
+
+        self.w = 0
+        self.V = 0
+        self.S = 0
+
+    def play(self):
+
+        return self._d2Phi()
+
+    def update(self, grad, h):
+        self.V += grad**2
+        self.S -= grad
+        self. h = h
+
+    def _dphi_dy(self, x, y):
+        def scaled_erfi(u):
+            return np.sqrt( np.pi / 2) * erfi(u)
+
+        coef = np.sqrt(4 * self.alpha * x)
+        return self.epsilon * scaled_erfi(y / coef)
+
+    def _d2Phi(self):
+        # z ~ h^2, k ~ h
+        k = 2 * self.h
+        z = (12 * self.alpha + 4) / (2 * self.alpha - 1) * self.h**2
+        return self._dphi_dy(self.V + z + k * self.S, self.S)
+
+
+class ZYCPMeta:
+    def __init__(self,input_dim=2, epsilon = 1, alpha = 1, h = 1):
+        self.learner_magnitude = ZYCPMagnitude(epsilon, alpha, h)
+        self.learner_direction = OSDBall(input_dim)
+
+        self.w = max(self.learner_magnitude.play(),0) * self.learner_direction.play()
+
+    def play(self):
+
+        return self.w
+
+    def update(self, grad, h):
+        y_tilde = self.learner_magnitude.play()
+        y = max(self.learner_magnitude.play(), 0)
+        x = self.learner_direction.play()
+
+        self.learner_direction.update(grad)
+        l = np.dot(grad, x)
+        l_tilde = l if l * y_tilde >= l * y else 0
+        self.learner_magnitude.update(l_tilde, h)
+
+        self.w = max(self.learner_magnitude.play(), 0) * self.learner_direction.play()
+
+
+
 
 
 
