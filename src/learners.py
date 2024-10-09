@@ -131,10 +131,10 @@ class RobustMagnitudeWithG:
         x = self.learner_rough.play()
         y = self.learner_fine.play()
         self.w = self._optimism(x, y)
-        self.denominator_sum += self.w ** np.log(self.T)
+        self.denominator_sum += np.abs(self.w) ** np.log(self.T) * np.sign(self.w)
 
     def _nabla_r(self, u):
-        numerator = self.c * np.log(self.T) * (u**(np.log(self.T)-1))
+        numerator = self.c * np.log(self.T) * (np.abs(u)**(np.log(self.T)-1)) * np.sign(u)
         denominator = (self.denominator_sum + np.abs(u) ** np.log(self.T))**(1 - 1 / np.log(self.T))
         return numerator / denominator
 
