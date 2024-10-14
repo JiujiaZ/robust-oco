@@ -20,16 +20,17 @@ def train(num_samples=50, input_dim=2, G=None, K = 0, name = 'cluster_split', le
         elif method == 'zycp':
             learner = ZYCPMeta(input_dim=input_dim, epsilon = 1, alpha = 1, h = G)
         elif method == 'robust':
-            learner = RobustMetaWithG(input_dim=input_dim, epsilon=1, h=G, c=K*G, T=len(dataset.dataset), K=K)
+            # learner = RobustMetaWithG(input_dim=input_dim, epsilon=1, h=G, c=K*G, T=len(dataset.dataset), K=K)
+            learner = RobustMetaWithoutG(input_dim=input_dim, epsilon=1, h=1, z=1, c=K*G, T=len(dataset.dataset), K=K)
         else:
             raise ValueError(f'method: {method} , not implemented')
 
         iterates = list()
         loss_val = list()
         lin_loss_val = list()
-        for epoch in range(10):
+        for epoch in range(1):
             # corrupted rounds:
-            corrupted_indices = corruption(len(dataset.dataset), 10)
+            corrupted_indices = corruption(len(dataset.dataset), K)
             for idx, (x, y) in enumerate(dataset):
 
                 w = learner.play()
@@ -65,7 +66,7 @@ def visualize_results(dataset, res, corrupted_indices):
 
     # highlight corrupted labels
     plt.scatter(x_vals[corrupted_indices, 0], x_vals[corrupted_indices, 1],
-                edgecolor='k', facecolor='none', s=100, label='Corrupted Labels')
+                edgecolor='k', facecolor='none', s=100, label='Corrupted (Feature)')
     # Plot generators boundary
     x_boundary = np.linspace(min(x_vals[:, 0]), max(x_vals[:, 0]), 100)
     if dataset.linear_boundary is not None:
@@ -92,7 +93,7 @@ def visualize_results(dataset, res, corrupted_indices):
 def run(num_samples=50, input_dim=2, G=None, K=5, name = 'cluster_split'):
 
     learner_methods = ['fake_cb', 'zycp', 'robust']
-    loss_fn = 'square'
+    loss_fn = 'absolute'
     # learner_methods = [ 'robust']
     dataset, corrupted_indices, res = train(num_samples=num_samples, input_dim=input_dim,
                                             G= G, K = K, name = name, learner_methods = learner_methods,
@@ -105,7 +106,7 @@ def run(num_samples=50, input_dim=2, G=None, K=5, name = 'cluster_split'):
 
 # Run the experiment
 if __name__ == '__main__':
-    res = run(num_samples=500, input_dim=1, G=10, K=1, name = 'mean')
+    res = run(num_samples=5000, input_dim=1, G=10, K=100, name = 'mean')
 
     plt.figure(figsize=(8, 6))
     for method in res.keys():

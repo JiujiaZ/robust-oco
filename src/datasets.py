@@ -29,7 +29,7 @@ class DatasetGenerator:
             # learn mean estimation problem
             # suspect robust olo can only produce small iterate
 
-            Y = np.random.normal(loc=3, scale=1, size=self.num_samples*2)
+            Y = np.random.normal(loc=10, scale=1, size=self.num_samples*2)
             # Y = X.mean() * np.ones_like(X)
             X = np.ones_like(Y)
 
