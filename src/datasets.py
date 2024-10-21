@@ -33,6 +33,12 @@ class DatasetGenerator:
             # Y = X.mean() * np.ones_like(X)
             X = np.ones_like(Y)
 
+        elif name == 'greedy':
+            # l(w) = |y-wx| = |y-1|
+            Y = np.ones(self.num_samples*2)
+            X = np.ones_like(Y)
+
+
         dataset = list(zip(X, Y))
         np.random.shuffle(dataset)
         return dataset
